@@ -13,7 +13,13 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // put your main code here, to run repeatedly: 
+   Serial.println(soundAmplitude(sensorPin));
+}
+
+// read from an analog pin and return voltage that corresponds to sound amplitude
+// takes 50 ms for each run
+double soundAmplitude(int pin) {
   unsigned long startMillis= millis();  // Start of sample window
   unsigned int peakToPeak = 0;   // peak-to-peak level
  
@@ -23,7 +29,7 @@ void loop() {
    // collect data for 50 mS
    while (millis() - startMillis < sampleWindow)
    {
-      sample = analogRead(sensorPin);
+      sample = analogRead(pin);
       if (sample < 1024)  // toss out spurious readings
       {
          if (sample > signalMax)
@@ -37,7 +43,6 @@ void loop() {
       }
    }
    peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
-   double volts = (peakToPeak * 5.0) / 1024;  // convert to volts
- 
-   Serial.println(volts);
+   return (peakToPeak * 5.0) / 1024;  // convert to volts
 }
+
