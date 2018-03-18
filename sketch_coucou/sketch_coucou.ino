@@ -17,21 +17,37 @@
 */
 
 #include "Ear.h"
+#include "Body.h"
 
-int ledPin=13;
-int sensorPin=7;
+const int ledPin = 13;
+const int sensorPin = 7;
+const int motorPin = 9;
 
 Ear *myEar;
+Body *myBody;
+
+double loudness = 0;
 
 void setup() {
   // put your setup code here, to run once:
   pinMode(ledPin, OUTPUT);
   myEar = new Ear(sensorPin);
+  myBody = new Body(motorPin);
   Serial.begin (9600);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly: 
-   Serial.println(myEar->getLoudness());
+   // put your main code here, to run repeatedly:
+   loudness = myEar->getLoudness();
+   if (loudness > 2.0) {
+    myBody->moveToHiding();
+   } else if(loudness > 1.0) {
+    myBody->moveToHalfOut();
+   } else {
+    myBody->moveToFullOut();
+   }
+   Serial.println(loudness);
+   Serial.println(0);
+   //delay(100);
 }
 
