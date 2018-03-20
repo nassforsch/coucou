@@ -18,11 +18,11 @@
 
 #ifndef BODY_H
 #define BODY_H
-#include <Servo.h>
+#include <Adafruit_PWMServoDriver.h>
 
 class Body {
   public:
-    Body(int motorPin);
+    Body(Adafruit_PWMServoDriver *pwm);
     ~Body();
 
     void moveToFullOut();
@@ -31,7 +31,8 @@ class Body {
     
   private:
 	int currentPosition = 0;
-	Servo *myServo;
+	int servonum = 0;
+	Adafruit_PWMServoDriver *pwm;
 	
 };
 

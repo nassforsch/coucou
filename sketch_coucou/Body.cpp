@@ -18,12 +18,19 @@
 
 #include "Body.h"
 #include <Arduino.h>
-#include <Servo.h>
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
 
-Body::Body(int _motorPin)
+// Depending on your servo make, the pulse width min and max may vary, you 
+// want these to be as small/large as possible without hitting the hard stop
+// for max range. You'll have to tweak them as necessary to match the servos you
+// have!
+#define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
+
+Body::Body(Adafruit_PWMServoDriver *_pwm)
+:pwm(_pwm)
 {
-	myServo = new Servo();
-	myServo->attach(_motorPin);
 }
 
 Body::~Body()
@@ -33,7 +40,8 @@ Body::~Body()
 void Body::moveToFullOut()
 {
 	while (currentPosition <= 175) {
-		myServo->write(++currentPosition);
+		int pulselength = map(++currentPosition, 0, 180, SERVOMIN, SERVOMAX);
+		pwm->setPWM(servonum, 0, pulselength);
 		delay(15);							// wait 15 ms to reach position
 	}
 }
@@ -42,7 +50,8 @@ void Body::moveToHalfOut()
 {
 	if (currentPosition != 90) {
 		currentPosition = 90;
-		myServo->write(currentPosition);
+		int pulselength = map(++currentPosition, 0, 180, SERVOMIN, SERVOMAX);
+		pwm->setPWM(servonum, 0, pulselength);
 		delay(1000);							// wait 15 ms to reach position
 	}
 }
@@ -51,7 +60,8 @@ void Body::moveToHiding()
 {
 		if (currentPosition > 5) {
 			currentPosition = 5;
-			myServo->write(currentPosition);
+			int pulselength = map(++currentPosition, 0, 180, SERVOMIN, SERVOMAX);
+			pwm->setPWM(servonum, 0, pulselength);
 			delay(2000);							// wait 15 ms to reach position
 		}
 }
