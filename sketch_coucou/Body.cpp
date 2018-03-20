@@ -40,20 +40,18 @@ void Body::moveToFullOut()
 
 void Body::moveToHalfOut()
 {
-	while (currentPosition < 90) {
-		myServo->write(++currentPosition);
-		delay(15);							// wait 15 ms to reach position
-	}
-	while (currentPosition > 90) {
-		myServo->write(--currentPosition);
-		delay(15);							// wait 15 ms to reach position
+	if (currentPosition != 90) {
+		currentPosition = 90;
+		myServo->write(currentPosition);
+		delay(1000);							// wait 15 ms to reach position
 	}
 }
 
 void Body::moveToHiding()
 {
-		while (currentPosition > 5) {
-		myServo->write(--currentPosition);
-		delay(15);							// wait 15 ms to reach position
-	}
+		if (currentPosition > 5) {
+			currentPosition = 5;
+			myServo->write(currentPosition);
+			delay(2000);							// wait 15 ms to reach position
+		}
 }

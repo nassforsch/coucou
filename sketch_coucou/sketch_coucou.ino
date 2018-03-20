@@ -41,7 +41,7 @@ void loop() {
    loudness = myEar->getLoudness();
    if (loudness > 2.0) {
     myBody->moveToHiding();
-   } else if(loudness > 1.0) {
+   } else if(loudness > 1.5) {
     myBody->moveToHalfOut();
    } else {
     myBody->moveToFullOut();
