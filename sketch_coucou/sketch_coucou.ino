@@ -18,16 +18,13 @@
 
 #include "Ear.h"
 #include "Body.h"
-#include <Wire.h>
-#include <Adafruit_PWMServoDriver.h>
+#include "BodyFactory.h"
 
-// called this way, it uses the default address 0x40
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
-
-const int ledPin = 13;
+//const int ledPin = 13;
 const int sensorPin = 7;
 
 Ear *myEar;
+BodyFactory *myBodyFactory;
 Body *myBody;
 
 double loudness = 0;
@@ -36,11 +33,10 @@ void setup() {
   // put your setup code here, to run once:
   pinMode(ledPin, OUTPUT);
   myEar = new Ear(sensorPin);
-  myBody = new Body(&pwm);
+  myBodyFactory = new BodyFactory();
+  myBody = myBodyFactory->createBody();
   Serial.begin (9600);
   
-  pwm.begin();
-  pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
   delay(10);
 }
 

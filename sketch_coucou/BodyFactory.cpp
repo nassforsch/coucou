@@ -16,24 +16,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef BODY_H
-#define BODY_H
+#include "BodyFactory.h"
+#include "Body.h"
+#include <Arduino.h>
+#include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
-class Body {
-  public:
-    Body(Adafruit_PWMServoDriver *pwm, unsigned int servoNum);
-    ~Body();
+BodyFactory::BodyFactory()
+{
+	// create servo driver object that will be shared by all bodies created by the BodyFactory
+	// called this way, it uses the default address 0x40
+	pwm = new Adafruit_PWMServoDriver();
+	pwm->begin();
+	pwm->setPWMFreq(60);  // Analog servos run at ~60 Hz updates
 
-    void moveToFullOut();
-	void moveToHalfOut();
-	void moveToHiding();
-    
-  private:
-	int currentPosition = 0;
-	unsigned int servoNum;
-	Adafruit_PWMServoDriver *pwm;
-	
-};
+}
 
-#endif // ndef BODY_H
+BodyFactory::~BodyFactory()
+{
+	destroy pwm;
+}
+
+Body* BodyFactory::createBody()
+{
+	// create new Body object with reference to servo driver
+	// and increase next servo counter by one
+	return new Body(&pwm, nextServo++);
+}

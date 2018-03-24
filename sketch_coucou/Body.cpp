@@ -28,8 +28,8 @@
 #define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
 
-Body::Body(Adafruit_PWMServoDriver *_pwm)
-:pwm(_pwm)
+Body::Body(Adafruit_PWMServoDriver *_pwm, unsigned int _servoNum)
+:pwm(_pwm), servoNum(_servoNum)
 {
 }
 

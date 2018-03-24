@@ -16,24 +16,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef BODY_H
-#define BODY_H
+#ifndef BODYFACTORY_H
+#define BODYFACTORY_H
 #include <Adafruit_PWMServoDriver.h>
+#include "Body.h"
 
-class Body {
+class BodyFactory {
   public:
-    Body(Adafruit_PWMServoDriver *pwm, unsigned int servoNum);
-    ~Body();
+    BodyFactory();
+    ~BodyFactory();
 
-    void moveToFullOut();
-	void moveToHalfOut();
-	void moveToHiding();
+	// return new Body instance initalized to use shared servo driver
+    Body* createBody();
     
   private:
-	int currentPosition = 0;
-	unsigned int servoNum;
+	// shared servo driver for all Body objects
 	Adafruit_PWMServoDriver *pwm;
-	
+	// counter to determine next servo slot to be used
+	// based on order of creation of Body objects
+	unsigned int nextServo = 0;
 };
 
-#endif // ndef BODY_H
+#endif // ndef BODYFACTORY_H
