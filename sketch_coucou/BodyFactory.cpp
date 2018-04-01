@@ -63,7 +63,16 @@ void BodyFactory::moveBodies()
 		lastUpdate = millis();
 
 		for (int i=0; i<bodyList->size(); i++) {
-			int pulselength = map((bodyList->get(i))->getPosition(), 0, 180, SERVOMIN, SERVOMAX);
+			int targetPosition = (bodyList->get(i))->getTargetPosition();
+			int speed =  (bodyList->get(i))->getSpeed();
+			int position = (bodyList->get(i))->getPosition();
+			int delta = targetPosition - position;
+			if (delta > 0)
+				position = position + constrain(delta,0,speed);
+			else if (delta < 0)
+				position = position + constrain(delta,-speed,0);
+			(bodyList->get(i))->setPosition(position);
+			int pulselength = map(position, 0, 180, SERVOMIN, SERVOMAX);
 			Serial.println(pulselength);
 			pwm->setPWM(i, 0, pulselength);
 		}

@@ -39,7 +39,7 @@ class BodyFactory {
 	// shared servo driver for all Body objects
 	Adafruit_PWMServoDriver *pwm;
 	
-	int  updateInterval = 150;      // interval between updates
+	int  updateInterval = 50;      // interval between updates
 	unsigned long lastUpdate = 0; // last update of position
 	
 };

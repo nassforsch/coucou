@@ -38,6 +38,21 @@ int Body::getPosition()
 	return position;
 }
 
+int Body::getTargetPosition()
+{
+	return targetPosition;
+}
+
+int Body::getSpeed()
+{
+	return speed;
+}
+
+void Body::setPosition(int newPosition)
+{
+	position = newPosition;
+}
+
 void Body::reactToLoudness(double loudness)
 {
 	if (myState == IN) {
@@ -45,31 +60,61 @@ void Body::reactToLoudness(double loudness)
 			startWaitTime = millis();
 		}
 		if (millis() - startWaitTime > 5000) {
-			myState = OUT;
-			position = 175;
+			myState = MOVEOUT;
+			speed = 2;
+			targetPosition = 175;
 			startWaitTime = millis();
 		}
 	}
 	if (myState == HALF) {
 		if (loudness > 2.0) {
 			myState = IN;
-			position = 5;
+			speed = 1000;
+			targetPosition = 5;
 			startWaitTime = millis();
 		} else if (loudness < 1.5 && millis() - startWaitTime > 5000) {
-			myState = OUT;
-			position = 175;
+			myState = MOVEOUT;
+			speed = 2;
+			targetPosition = 175;
 			startWaitTime = millis();
 		}
 	}
 	if (myState == OUT && millis() - startWaitTime > 2000) {
 		if (loudness > 2.0) {
 			myState = IN;
-			position = 5;
+			speed = 1000;
+			targetPosition = 5;
 			startWaitTime = millis();
 		} else if (loudness > 1.5) {
-			myState = HALF;
-			position = 90;
+			myState = MOVEHALF;
+			speed = 1000;
+			targetPosition = 90;
 			startWaitTime = millis();
 		}
 	}
+	if (myState == MOVEOUT) {
+		if (loudness > 2.0) {
+			myState = IN;
+			speed = 1000;
+			targetPosition = 5;
+			startWaitTime = millis();
+		} else if (loudness > 1.5 && position > 90) {
+			myState = MOVEHALF;
+			speed = 1000;
+			targetPosition = 90;
+		} else if (position == targetPosition) {
+			myState = OUT;
+		}
+	}
+	if (myState == MOVEHALF) {
+		if (loudness > 2.0) {
+			myState = IN;
+			speed = 1000;
+			targetPosition = 5;
+			startWaitTime = millis();
+		} else if (position == targetPosition) {
+			myState = HALF;
+		}
+	}
+	
 }
