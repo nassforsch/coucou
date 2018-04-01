@@ -21,25 +21,52 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
+#include <LinkedList.h>
+
+// Depending on your servo make, the pulse width min and max may vary, you 
+// want these to be as small/large as possible without hitting the hard stop
+// for max range. You'll have to tweak them as necessary to match the servos you
+// have!
+#define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
 
 BodyFactory::BodyFactory()
 {
 	// create servo driver object that will be shared by all bodies created by the BodyFactory
 	// called this way, it uses the default address 0x40
 	pwm = new Adafruit_PWMServoDriver();
+	bodyList = new LinkedList<Body*>();
+
 	pwm->begin();
 	pwm->setPWMFreq(60);  // Analog servos run at ~60 Hz updates
-
 }
 
 BodyFactory::~BodyFactory()
 {
 	delete pwm;
+	delete bodyList;
 }
 
 Body* BodyFactory::createBody()
 {
 	// create new Body object with reference to servo driver
 	// and increase next servo counter by one
-	return new Body(pwm, nextServo++);
+	Body *newBody = new Body();
+	bodyList->add(newBody);
+	return newBody;
+}
+
+void BodyFactory::moveBodies()
+{
+    if((millis() - lastUpdate) > updateInterval)  // time to update
+    {
+		lastUpdate = millis();
+
+		for (int i=0; i<bodyList->size(); i++) {
+			int pulselength = map((bodyList->get(i))->getPosition(), 0, 180, SERVOMIN, SERVOMAX);
+			Serial.println(pulselength);
+			pwm->setPWM(i, 0, pulselength);
+		}
+	}
+	
 }

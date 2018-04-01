@@ -19,6 +19,7 @@
 #ifndef BODYFACTORY_H
 #define BODYFACTORY_H
 #include <Adafruit_PWMServoDriver.h>
+#include <LinkedList.h>
 #include "Body.h"
 
 class BodyFactory {
@@ -28,13 +29,19 @@ class BodyFactory {
 
 	// return new Body instance initalized to use shared servo driver
     Body* createBody();
+	
+	// carry out movements of all bodies
+	void moveBodies();
     
   private:
+	LinkedList<Body*> *bodyList;
+  
 	// shared servo driver for all Body objects
 	Adafruit_PWMServoDriver *pwm;
-	// counter to determine next servo slot to be used
-	// based on order of creation of Body objects
-	unsigned int nextServo = 0;
+	
+	int  updateInterval = 150;      // interval between updates
+	unsigned long lastUpdate = 0; // last update of position
+	
 };
 
 #endif // ndef BODYFACTORY_H

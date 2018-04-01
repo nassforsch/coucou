@@ -20,7 +20,6 @@
 #include "Body.h"
 #include "BodyFactory.h"
 
-//const int ledPin = 13;
 const int sensorPin = 7;
 
 Ear *myEar;
@@ -31,27 +30,19 @@ double loudness = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  //pinMode(ledPin, OUTPUT);
   myEar = new Ear(sensorPin);
   myBodyFactory = new BodyFactory();
   myBody = myBodyFactory->createBody();
   Serial.begin (9600);
-  
   delay(10);
 }
 
 void loop() {
    // put your main code here, to run repeatedly:
    loudness = myEar->getLoudness();
-   if (loudness > 2.0) {
-    myBody->moveToHiding();
-   } else if(loudness > 1.5) {
-    myBody->moveToHalfOut();
-   } else {
-    myBody->moveToFullOut();
-   }
+   myBody->reactToLoudness(loudness);
+   myBodyFactory->moveBodies();
    Serial.println(loudness);
-   Serial.println(0);
    //delay(100);
 }
 

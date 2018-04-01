@@ -22,17 +22,16 @@
 
 class Body {
   public:
-    Body(Adafruit_PWMServoDriver *pwm, unsigned int servoNum);
+    Body();
     ~Body();
 
-    void moveToFullOut();
-	void moveToHalfOut();
-	void moveToHiding();
+	void reactToLoudness(double loudness);	
+	int getPosition();
     
   private:
-	int currentPosition = 0;
-	unsigned int servoNum;
-	Adafruit_PWMServoDriver *pwm;
+	int position = 0; // current servo target position
+	unsigned long startWaitTime = 0; // starting time of waiting period (in millis)
+	enum state { IN, HALF, OUT } myState = IN;
 	
 };
 

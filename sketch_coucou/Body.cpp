@@ -21,47 +21,55 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
-// Depending on your servo make, the pulse width min and max may vary, you 
-// want these to be as small/large as possible without hitting the hard stop
-// for max range. You'll have to tweak them as necessary to match the servos you
-// have!
-#define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
 
-Body::Body(Adafruit_PWMServoDriver *_pwm, unsigned int _servoNum)
-:pwm(_pwm), servoNum(_servoNum)
+Body::Body()
 {
+	myState = IN;
+	position = 5;
+	startWaitTime = millis();
 }
 
 Body::~Body()
 {
 }
 
-void Body::moveToFullOut()
+int Body::getPosition()
 {
-	while (currentPosition <= 175) {
-		int pulselength = map(++currentPosition, 0, 180, SERVOMIN, SERVOMAX);
-		pwm->setPWM(servoNum, 0, pulselength);
-		delay(15);							// wait 15 ms to reach position
-	}
+	return position;
 }
 
-void Body::moveToHalfOut()
+void Body::reactToLoudness(double loudness)
 {
-	if (currentPosition != 90) {
-		currentPosition = 90;
-		int pulselength = map(++currentPosition, 0, 180, SERVOMIN, SERVOMAX);
-		pwm->setPWM(servoNum, 0, pulselength);
-		delay(1000);							// wait 15 ms to reach position
-	}
-}
-
-void Body::moveToHiding()
-{
-		if (currentPosition > 5) {
-			currentPosition = 5;
-			int pulselength = map(++currentPosition, 0, 180, SERVOMIN, SERVOMAX);
-			pwm->setPWM(servoNum, 0, pulselength);
-			delay(2000);							// wait 15 ms to reach position
+	if (myState == IN) {
+		if (loudness > 1.5) {
+			startWaitTime = millis();
 		}
+		if (millis() - startWaitTime > 5000) {
+			myState = OUT;
+			position = 175;
+			startWaitTime = millis();
+		}
+	}
+	if (myState == HALF) {
+		if (loudness > 2.0) {
+			myState = IN;
+			position = 5;
+			startWaitTime = millis();
+		} else if (loudness < 1.5 && millis() - startWaitTime > 5000) {
+			myState = OUT;
+			position = 175;
+			startWaitTime = millis();
+		}
+	}
+	if (myState == OUT && millis() - startWaitTime > 2000) {
+		if (loudness > 2.0) {
+			myState = IN;
+			position = 5;
+			startWaitTime = millis();
+		} else if (loudness > 1.5) {
+			myState = HALF;
+			position = 90;
+			startWaitTime = millis();
+		}
+	}
 }
