@@ -34,12 +34,12 @@ BodyFactory::BodyFactory()
 
 BodyFactory::~BodyFactory()
 {
-	destroy pwm;
+	delete pwm;
 }
 
 Body* BodyFactory::createBody()
 {
 	// create new Body object with reference to servo driver
 	// and increase next servo counter by one
-	return new Body(&pwm, nextServo++);
+	return new Body(pwm, nextServo++);
 }

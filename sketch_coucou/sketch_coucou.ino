@@ -31,7 +31,7 @@ double loudness = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(ledPin, OUTPUT);
+  //pinMode(ledPin, OUTPUT);
   myEar = new Ear(sensorPin);
   myBodyFactory = new BodyFactory();
   myBody = myBodyFactory->createBody();

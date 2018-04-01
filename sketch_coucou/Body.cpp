@@ -41,7 +41,7 @@ void Body::moveToFullOut()
 {
 	while (currentPosition <= 175) {
 		int pulselength = map(++currentPosition, 0, 180, SERVOMIN, SERVOMAX);
-		pwm->setPWM(servonum, 0, pulselength);
+		pwm->setPWM(servoNum, 0, pulselength);
 		delay(15);							// wait 15 ms to reach position
 	}
 }
@@ -51,7 +51,7 @@ void Body::moveToHalfOut()
 	if (currentPosition != 90) {
 		currentPosition = 90;
 		int pulselength = map(++currentPosition, 0, 180, SERVOMIN, SERVOMAX);
-		pwm->setPWM(servonum, 0, pulselength);
+		pwm->setPWM(servoNum, 0, pulselength);
 		delay(1000);							// wait 15 ms to reach position
 	}
 }
@@ -61,7 +61,7 @@ void Body::moveToHiding()
 		if (currentPosition > 5) {
 			currentPosition = 5;
 			int pulselength = map(++currentPosition, 0, 180, SERVOMIN, SERVOMAX);
-			pwm->setPWM(servonum, 0, pulselength);
+			pwm->setPWM(servoNum, 0, pulselength);
 			delay(2000);							// wait 15 ms to reach position
 		}
 }
