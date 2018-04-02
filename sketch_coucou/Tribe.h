@@ -16,28 +16,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef BODY_H
-#define BODY_H
+#ifndef TRIBE_H
+#define TRIBE_H
 #include <Adafruit_PWMServoDriver.h>
+#include <LinkedList.h>
+#include "TribeMember.h"
 
-class Body {
+class Tribe {
   public:
-    Body();
-    ~Body();
+    Tribe();
+    ~Tribe();
 
-	void reactToLoudness(double loudness);	
-	int getPosition();
-	int getTargetPosition();
-	int getSpeed();
-	void setPosition(int newPosition);
+	// return new TribeMember instance initalized to use shared servo driver
+    TribeMember* createTribeMember();
+	
+	// carry out movements of all bodies
+	void moveBodies();
     
   private:
-	int targetPosition = 0;
-	int position = 0; // current servo target position
-	int speed = 1000; // degrees per second
-	unsigned long startWaitTime = 0; // starting time of waiting period (in millis)
-	enum state { IN, HALF, OUT, MOVEHALF, MOVEOUT } myState = IN;
+	LinkedList<TribeMember*> *bodyList;
+  
+	// shared servo driver for all TribeMember objects
+	Adafruit_PWMServoDriver *pwm;
+	
+	int  updateInterval = 50;      // interval between updates
+	unsigned long lastUpdate = 0; // last update of position
 	
 };
 
-#endif // ndef BODY_H
+#endif // ndef TRIBE_H

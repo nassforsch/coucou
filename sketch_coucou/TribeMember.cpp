@@ -16,44 +16,44 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Body.h"
+#include "TribeMember.h"
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
 
-Body::Body()
+TribeMember::TribeMember()
 {
 	myState = IN;
 	position = 5;
 	startWaitTime = millis();
 }
 
-Body::~Body()
+TribeMember::~TribeMember()
 {
 }
 
-int Body::getPosition()
+int TribeMember::getPosition()
 {
 	return position;
 }
 
-int Body::getTargetPosition()
+int TribeMember::getTargetPosition()
 {
 	return targetPosition;
 }
 
-int Body::getSpeed()
+int TribeMember::getSpeed()
 {
 	return speed;
 }
 
-void Body::setPosition(int newPosition)
+void TribeMember::setPosition(int newPosition)
 {
 	position = newPosition;
 }
 
-void Body::reactToLoudness(double loudness)
+void TribeMember::reactToLoudness(double loudness)
 {
 	if (myState == IN) {
 		if (loudness > 1.5) {

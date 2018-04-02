@@ -17,22 +17,22 @@
 */
 
 #include "Ear.h"
-#include "Body.h"
-#include "BodyFactory.h"
+#include "TribeMember.h"
+#include "Tribe.h"
 
 const int sensorPin = 7;
 
 Ear *myEar;
-BodyFactory *myBodyFactory;
-Body *myBody;
+Tribe *myTribe;
+TribeMember *myTribeMember;
 
 double loudness = 0;
 
 void setup() {
   // put your setup code here, to run once:
   myEar = new Ear(sensorPin);
-  myBodyFactory = new BodyFactory();
-  myBody = myBodyFactory->createBody();
+  myTribe = new Tribe();
+  myTribeMember = myTribe->createTribeMember();
   Serial.begin (9600);
   delay(10);
 }
@@ -40,8 +40,8 @@ void setup() {
 void loop() {
    // put your main code here, to run repeatedly:
    loudness = myEar->getLoudness();
-   myBody->reactToLoudness(loudness);
-   myBodyFactory->moveBodies();
+   myTribeMember->reactToLoudness(loudness);
+   myTribe->moveBodies();
    Serial.println(loudness);
    //delay(100);
 }

@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "BodyFactory.h"
-#include "Body.h"
+#include "Tribe.h"
+#include "TribeMember.h"
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
@@ -29,39 +29,44 @@
 // have!
 #define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
+#define OE_PIN	  2   // pin for "output enable"
 
-BodyFactory::BodyFactory()
+Tribe::Tribe()
 {
-	// create servo driver object that will be shared by all bodies created by the BodyFactory
+	// create servo driver object that will be shared by all bodies created by the Tribe
 	// called this way, it uses the default address 0x40
 	pwm = new Adafruit_PWMServoDriver();
-	bodyList = new LinkedList<Body*>();
+	bodyList = new LinkedList<TribeMember*>();
 
 	pwm->begin();
 	pwm->setPWMFreq(60);  // Analog servos run at ~60 Hz updates
+	
+	pinMode(OE_PIN, OUTPUT);
 }
 
-BodyFactory::~BodyFactory()
+Tribe::~Tribe()
 {
 	delete pwm;
 	delete bodyList;
 }
 
-Body* BodyFactory::createBody()
+TribeMember* Tribe::createTribeMember()
 {
-	// create new Body object with reference to servo driver
+	// create new TribeMember object with reference to servo driver
 	// and increase next servo counter by one
-	Body *newBody = new Body();
-	bodyList->add(newBody);
-	return newBody;
+	TribeMember *newTribeMember = new TribeMember();
+	bodyList->add(newTribeMember);
+	return newTribeMember;
 }
 
-void BodyFactory::moveBodies()
+void Tribe::moveBodies()
 {
     if((millis() - lastUpdate) > updateInterval)  // time to update
     {
 		lastUpdate = millis();
-
+		
+		digitalWrite(OE_PIN, LOW);
+		
 		for (int i=0; i<bodyList->size(); i++) {
 			int targetPosition = (bodyList->get(i))->getTargetPosition();
 			int speed =  (bodyList->get(i))->getSpeed();
@@ -76,6 +81,8 @@ void BodyFactory::moveBodies()
 			Serial.println(pulselength);
 			pwm->setPWM(i, 0, pulselength);
 		}
+		
+		digitalWrite(OE_PIN, HIGH);
 	}
 	
 }

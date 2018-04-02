@@ -16,32 +16,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef BODYFACTORY_H
-#define BODYFACTORY_H
-#include <Adafruit_PWMServoDriver.h>
-#include <LinkedList.h>
-#include "Body.h"
+#ifndef TRIBEMEMBER_H
+#define TRIBEMEMBER_H
 
-class BodyFactory {
+class TribeMember {
   public:
-    BodyFactory();
-    ~BodyFactory();
+    TribeMember();
+    ~TribeMember();
 
-	// return new Body instance initalized to use shared servo driver
-    Body* createBody();
-	
-	// carry out movements of all bodies
-	void moveBodies();
+	void reactToLoudness(double loudness);	
+	int getPosition();
+	int getTargetPosition();
+	int getSpeed();
+	void setPosition(int newPosition);
     
   private:
-	LinkedList<Body*> *bodyList;
-  
-	// shared servo driver for all Body objects
-	Adafruit_PWMServoDriver *pwm;
-	
-	int  updateInterval = 50;      // interval between updates
-	unsigned long lastUpdate = 0; // last update of position
+	int targetPosition = 0;
+	int position = 0; // current servo target position
+	int speed = 1000; // degrees per second
+	unsigned long startWaitTime = 0; // starting time of waiting period (in millis)
+	enum state { IN, HALF, OUT, MOVEHALF, MOVEOUT } myState = IN;
 	
 };
 
-#endif // ndef BODYFACTORY_H
+#endif // ndef TRIBEMEMBER_H
