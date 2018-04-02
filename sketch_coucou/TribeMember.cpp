@@ -24,8 +24,12 @@
 
 TribeMember::TribeMember()
 {
-	myState = IN;
-	position = 5;
+	// initally move to "IN" position
+	myState = MOVEIN;
+	position = 0;
+	targetPosition = 5;
+	speed = 1000;
+	idle = false;
 	startWaitTime = millis();
 }
 
@@ -48,73 +52,100 @@ int TribeMember::getSpeed()
 	return speed;
 }
 
+bool TribeMember::isIdle()
+{
+	return idle;
+}
+
 void TribeMember::setPosition(int newPosition)
 {
 	position = newPosition;
 }
 
-void TribeMember::reactToLoudness(double loudness)
+void TribeMember::determineReaction(double loudness)
 {
 	if (myState == IN) {
 		if (loudness > 1.5) {
+			// stay in this state and
+			// reset timeout if loudness
+			// is above lower threshold
 			startWaitTime = millis();
+			idle = true;
 		}
 		if (millis() - startWaitTime > 5000) {
+			// leave state and move to full out
+			// if loudness has been below threshold
+			// for full wait time
 			myState = MOVEOUT;
 			speed = 2;
 			targetPosition = 175;
 			startWaitTime = millis();
+			idle = false;
 		}
 	}
 	if (myState == HALF) {
 		if (loudness > 2.0) {
-			myState = IN;
+			// retract further to IN state if loudness
+			// is above higher threshold
+			myState = MOVEIN;
 			speed = 1000;
 			targetPosition = 5;
-			startWaitTime = millis();
+			idle = false;
 		} else if (loudness < 1.5 && millis() - startWaitTime > 5000) {
+			// move further out if loudness was below threshold
+			// for full wait time
 			myState = MOVEOUT;
 			speed = 2;
 			targetPosition = 175;
-			startWaitTime = millis();
+			idle = false;
 		}
 	}
 	if (myState == OUT && millis() - startWaitTime > 2000) {
 		if (loudness > 2.0) {
-			myState = IN;
+			myState = MOVEIN;
 			speed = 1000;
 			targetPosition = 5;
-			startWaitTime = millis();
+			idle = false;
 		} else if (loudness > 1.5) {
 			myState = MOVEHALF;
 			speed = 1000;
 			targetPosition = 90;
-			startWaitTime = millis();
+			idle = false;
 		}
 	}
 	if (myState == MOVEOUT) {
 		if (loudness > 2.0) {
-			myState = IN;
+			myState = MOVEIN;
 			speed = 1000;
 			targetPosition = 5;
-			startWaitTime = millis();
+			idle = false;
 		} else if (loudness > 1.5 && position > 90) {
 			myState = MOVEHALF;
 			speed = 1000;
 			targetPosition = 90;
+			idle = false;
 		} else if (position == targetPosition) {
 			myState = OUT;
+			idle = true;
 		}
 	}
 	if (myState == MOVEHALF) {
 		if (loudness > 2.0) {
-			myState = IN;
+			myState = MOVEIN;
 			speed = 1000;
 			targetPosition = 5;
-			startWaitTime = millis();
+			idle = false;
 		} else if (position == targetPosition) {
 			myState = HALF;
+			startWaitTime = millis();
+			idle = true;
 		}
 	}
-	
+	if (myState == MOVEIN) {
+		if (position == targetPosition) {
+			myState = IN;
+			startWaitTime = millis();
+			idle = true;
+		}
+	}
 }

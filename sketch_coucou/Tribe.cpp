@@ -65,7 +65,7 @@ void Tribe::moveBodies()
     {
 		lastUpdate = millis();
 		
-		digitalWrite(OE_PIN, LOW);
+		//digitalWrite(OE_PIN, LOW);
 		
 		for (int i=0; i<bodyList->size(); i++) {
 			int targetPosition = (bodyList->get(i))->getTargetPosition();
@@ -82,7 +82,7 @@ void Tribe::moveBodies()
 			pwm->setPWM(i, 0, pulselength);
 		}
 		
-		digitalWrite(OE_PIN, HIGH);
+		//digitalWrite(OE_PIN, HIGH);
 	}
 	
 }

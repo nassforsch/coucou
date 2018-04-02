@@ -40,7 +40,7 @@ void setup() {
 void loop() {
    // put your main code here, to run repeatedly:
    loudness = myEar->getLoudness();
-   myTribeMember->reactToLoudness(loudness);
+   myTribeMember->determineReaction(loudness);
    myTribe->moveBodies();
    Serial.println(loudness);
    //delay(100);

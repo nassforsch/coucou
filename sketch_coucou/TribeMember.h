@@ -23,19 +23,21 @@ class TribeMember {
   public:
     TribeMember();
     ~TribeMember();
-
-	void reactToLoudness(double loudness);	
+	
+	void determineReaction(double loudness);	
 	int getPosition();
 	int getTargetPosition();
 	int getSpeed();
 	void setPosition(int newPosition);
+	bool isIdle();
     
   private:
+	bool idle = true;
 	int targetPosition = 0;
 	int position = 0; // current servo target position
 	int speed = 1000; // degrees per second
 	unsigned long startWaitTime = 0; // starting time of waiting period (in millis)
-	enum state { IN, HALF, OUT, MOVEHALF, MOVEOUT } myState = IN;
+	enum stateOptions { IN, HALF, OUT, MOVEIN, MOVEHALF, MOVEOUT } myState = IN;
 	
 };
 
