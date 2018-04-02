@@ -21,14 +21,13 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
-
-TribeMember::TribeMember(int _fastSpeed, int _slowSpeed)
-:fastSpeed(_fastSpeed), slowSpeed(_slowSpeed)
+TribeMember::TribeMember(int _fastSpeed, int _slowSpeed, double _loudNoise, double _mediumNoise, int _freezeTimeout)
+:fastSpeed(_fastSpeed), slowSpeed(_slowSpeed), loudNoise(_loudNoise), mediumNoise(_mediumNoise), freezeTimeout(_freezeTimeout)
 {
-	// initally move fast to "IN" position
+	// initally move fast to "IN" position, assume we are fully out
 	myState = MOVEIN;
-	position = 0;
-	targetPosition = 5;
+	position = TribeMemberConst::outPosition;
+	targetPosition = TribeMemberConst::inPosition;
 	speed = fastSpeed;
 	idle = false;
 	startMoveTime = millis();
@@ -66,89 +65,89 @@ void TribeMember::setPosition(int newPosition)
 void TribeMember::determineReaction(double loudness)
 {
 	if (myState == IN) {
-		if (loudness > 1.5) {
+		if (loudness > mediumNoise) {
 			// stay in this state and
 			// reset timeout if loudness
 			// is above lower threshold
 			startWaitTime = millis();
 			idle = true;
 		}
-		if (millis() - startWaitTime > 5000) {
+		if (millis() - startWaitTime > freezeTimeout) {
 			// leave state and move to full out
 			// if loudness has been below threshold
 			// for full wait time
 			myState = MOVEOUT;
 			speed = slowSpeed;
-			targetPosition = 175;
+			targetPosition = TribeMemberConst::outPosition;
 			startWaitTime = millis();
 			idle = false;
 		}
 	}
 	if (myState == HALF) {
-		if (loudness > 2.0) {
+		if (loudness > loudNoise) {
 			// retract further to IN state if loudness
 			// is above higher threshold
 			myState = MOVEIN;
 			speed = fastSpeed;
-			targetPosition = 5;
+			targetPosition = TribeMemberConst::inPosition;
 			idle = false;
 			startMoveTime = millis();
-		} else if (loudness < 1.5 && millis() - startWaitTime > 5000) {
+		} else if (loudness < mediumNoise && millis() - startWaitTime > freezeTimeout) {
 			// move further out if loudness was below threshold
 			// for full wait time
 			myState = MOVEOUT;
 			speed = slowSpeed;
-			targetPosition = 175;
+			targetPosition = TribeMemberConst::outPosition;
 			idle = false;
 		}
 	}
-	if (myState == OUT && millis() - startWaitTime > 2000) {
-		if (loudness > 2.0) {
+	if (myState == OUT) {
+		if (loudness > loudNoise) {
 			myState = MOVEIN;
 			speed = fastSpeed;
-			targetPosition = 5;
+			targetPosition = TribeMemberConst::inPosition;
 			idle = false;
 			startMoveTime = millis();
-		} else if (loudness > 1.5) {
+		} else if (loudness > mediumNoise) {
 			myState = MOVEHALF;
 			speed = fastSpeed;
-			targetPosition = 90;
+			targetPosition = TribeMemberConst::halfPosition;
 			idle = false;
 			startMoveTime = millis();
 		}
 	}
 	if (myState == MOVEOUT) {
-		if (loudness > 2.0) {
+		if (loudness > loudNoise) {
 			myState = MOVEIN;
 			speed = fastSpeed;
-			targetPosition = 5;
+			targetPosition = TribeMemberConst::inPosition;
 			idle = false;
 			startMoveTime = millis();
-		} else if (loudness > 1.5 && position > 90) {
+		} else if (loudness > mediumNoise && position > TribeMemberConst::halfPosition) {
 			myState = MOVEHALF;
 			speed = fastSpeed;
-			targetPosition = 90;
+			targetPosition = TribeMemberConst::halfPosition;
 			idle = false;
 			startMoveTime = millis();
-		} else if (position == targetPosition) {
+		} else if ((abs(position-targetPosition) < TribeMemberConst::positionFuzziness)) {
 			myState = OUT;
 			idle = true;
 		}
 	}
 	if (myState == MOVEHALF) {
-		if (loudness > 2.0) {
+		if (loudness > loudNoise) {
 			myState = MOVEIN;
 			speed = fastSpeed;
-			targetPosition = 5;
+			targetPosition = TribeMemberConst::inPosition;
 			idle = false;
-		} else if (position == targetPosition && millis() - startMoveTime > 100) {
+		} else if ((abs(position-targetPosition) < TribeMemberConst::positionFuzziness) && millis() - startMoveTime > TribeMemberConst::moveTimeout) {
 			myState = HALF;
 			startWaitTime = millis();
 			idle = true;
 		}
 	}
 	if (myState == MOVEIN) {
-		if (position == targetPosition && millis() - startMoveTime > 100) {
+		if ((abs(position-targetPosition) < TribeMemberConst::positionFuzziness) && millis() - startMoveTime > TribeMemberConst::moveTimeout) {
 			myState = IN;
 			startWaitTime = millis();
 			idle = true;

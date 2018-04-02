@@ -17,31 +17,55 @@
 */
 
 #include "Ear.h"
-#include "TribeMember.h"
 #include "Tribe.h"
 
-const int sensorPin = 7;
+struct tribeMemberSettings {
+	int fastSpeed;
+	int slowSpeed;
+	double loudNoise;
+	double mediumNoise;
+	int freezeTimout;
+};
+
+const int soundSensorPin = 7;
+const int serialBaudRate = 9600;
+const int numTribeMembers = 10;
+
+const tribeMemberSettings tribeConfiguration[numTribeMembers] = {
+	{1000, 10, 2.0, 1.5, 5000},
+	{100, 50, 2.2, 2.0, 5000},
+	{50, 5, 2.0, 1.5, 5000},
+	{50, 5, 2.0, 1.5, 5000},
+	{50, 5, 2.0, 1.5, 5000},
+	{50, 5, 2.0, 1.5, 5000},
+	{50, 5, 2.0, 1.5, 5000},
+	{50, 5, 2.0, 1.5, 5000},
+	{50, 5, 2.0, 1.5, 5000},
+	{50, 5, 2.0, 1.5, 5000}
+};
 
 Ear *myEar;
 Tribe *myTribe;
-TribeMember *myTribeMember;
 
-double loudness = 0;
+long startTime = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  myEar = new Ear(sensorPin);
+  myEar = new Ear(soundSensorPin);
   myTribe = new Tribe();
-  myTribeMember = myTribe->createTribeMember(20, 2);
-  Serial.begin (9600);
-  delay(10);
+  for (int i=0; i<numTribeMembers; i++) {	
+	myTribe->createTribeMember(tribeConfiguration[i].fastSpeed, tribeConfiguration[i].slowSpeed,
+	tribeConfiguration[i].loudNoise, tribeConfiguration[i].mediumNoise, tribeConfiguration[i].freezeTimout);
+  }
+  Serial.begin(serialBaudRate);
 }
 
 void loop() {
    // put your main code here, to run repeatedly:
-   loudness = myEar->getLoudness();
+   //startTime = millis();
+   double loudness = myEar->getLoudness();
    myTribe->update(loudness);
    Serial.println(loudness);
-   //delay(100);
+   //Serial.println(millis() - startTime);
 }
 

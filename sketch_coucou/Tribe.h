@@ -22,13 +22,15 @@
 #include <LinkedList.h>
 #include "TribeMember.h"
 
+const int updateInterval = 50;      // interval between servo updates
+
 class Tribe {
   public:
     Tribe();
     ~Tribe();
 
 	// return new TribeMember instance initalized to use shared servo driver
-    TribeMember* createTribeMember(int fastSpeed, int SlowSpeed);
+    void createTribeMember(int fastSpeed, int SlowSpeed, double loudNoise, double mediumNoise, int freezeTimeout);
 	
 	// pass sensor input to all TribeMember objects
 	void update(double loudness);
@@ -40,7 +42,6 @@ class Tribe {
 	// shared servo driver for all TribeMember objects
 	Adafruit_PWMServoDriver *pwm;
 	
-	int  updateInterval = 50;      // interval between updates
 	unsigned long lastUpdate = 0; // last update of position
 	
 	// carry out movements of all TribeMember objects

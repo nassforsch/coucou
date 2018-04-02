@@ -23,12 +23,6 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <LinkedList.h>
 
-// Depending on your servo make, the pulse width min and max may vary, you 
-// want these to be as small/large as possible without hitting the hard stop
-// for max range. You'll have to tweak them as necessary to match the servos you
-// have!
-#define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
 #define OE_PIN	  2   // pin for "output enable"
 
 Tribe::Tribe()
@@ -47,16 +41,16 @@ Tribe::Tribe()
 Tribe::~Tribe()
 {
 	delete pwm;
+	for (int i=0; i<tribeMemberList->size(); i++) {
+		delete tribeMemberList->get(i);
+	}
 	delete tribeMemberList;
 }
 
-TribeMember* Tribe::createTribeMember(int fastSpeed, int slowSpeed)
+void Tribe::createTribeMember(int fastSpeed, int slowSpeed, double loudNoise, double mediumNoise, int freezeTimeout)
 {
-	// create new TribeMember object with reference to servo driver
-	// and increase next servo counter by one
-	TribeMember *newTribeMember = new TribeMember(fastSpeed, slowSpeed);
-	tribeMemberList->add(newTribeMember);
-	return newTribeMember;
+	// create new TribeMember object 
+	tribeMemberList->add(new TribeMember(fastSpeed, slowSpeed, loudNoise, mediumNoise, freezeTimeout));
 }
 
 void Tribe::update(double loudness)
@@ -71,40 +65,47 @@ void Tribe::update(double loudness)
 		allTribeMembersIdle = allTribeMembersIdle && tribeMemberList->get(i)->isIdle();
 	}
 	
+	moveBodies();
 	// trigger movement if at least one member needs to move
 	if (!allTribeMembersIdle) {
+		// enable servo driver
 		digitalWrite(OE_PIN, LOW);
 		
+		// trigger movements
 		moveBodies();
 	} else {
+		// disable servo driver
 		digitalWrite(OE_PIN, HIGH);
 	}
-		
+	
+	
 }
-
 
 void Tribe::moveBodies()
 {
     if((millis() - lastUpdate) > updateInterval)  // time to update
     {
 		lastUpdate = millis();
+		
+		int timeForPwm = 0;
+		int t1 = 0;
 				
 		for (int i=0; i<tribeMemberList->size(); i++) {
-			int targetPosition = (tribeMemberList->get(i))->getTargetPosition();
-			int speed =  (tribeMemberList->get(i))->getSpeed();
-			int position = (tribeMemberList->get(i))->getPosition();
-			int delta = targetPosition - position;
-			if (delta > 0)
-				position = position + constrain(delta,0,speed);
-			else if (delta < 0)
-				position = position + constrain(delta,-speed,0);			
-			int pulselength = map(position, 0, 180, SERVOMIN, SERVOMAX);
-			Serial.println(pulselength);
-			pwm->setPWM(i, 0, pulselength);
-			tribeMemberList->get(i)->setPosition(position);
+			TribeMember *currentTribeMember = tribeMemberList->get(i);
+			if (!currentTribeMember->isIdle()) {
+				int targetPosition = currentTribeMember->getTargetPosition();
+				int speed = currentTribeMember->getSpeed();
+				int position = currentTribeMember->getPosition();
+				int delta = targetPosition - position;
+				if (delta > 0)
+					position = position + constrain(delta,0,speed);
+				else if (delta < 0)
+					position = position + constrain(delta,-speed,0);			
+				int pulselength = map(position, TribeMemberConst::minPosition, TribeMemberConst::maxPosition,
+				TribeMemberConst::minServoPulseLength, TribeMemberConst::maxServoPulseLength);
+				pwm->setPWM(i, 0, pulselength);
+				currentTribeMember->setPosition(position);
+			}
 		}
-		
-		
 	}
-	
 }
