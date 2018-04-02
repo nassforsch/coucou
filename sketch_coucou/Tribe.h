@@ -28,19 +28,24 @@ class Tribe {
     ~Tribe();
 
 	// return new TribeMember instance initalized to use shared servo driver
-    TribeMember* createTribeMember();
+    TribeMember* createTribeMember(int fastSpeed, int SlowSpeed);
 	
-	// carry out movements of all bodies
-	void moveBodies();
-    
+	// pass sensor input to all TribeMember objects
+	void update(double loudness);
+	
+   
   private:
-	LinkedList<TribeMember*> *bodyList;
+	LinkedList<TribeMember*> *tribeMemberList;
   
 	// shared servo driver for all TribeMember objects
 	Adafruit_PWMServoDriver *pwm;
 	
 	int  updateInterval = 50;      // interval between updates
 	unsigned long lastUpdate = 0; // last update of position
+	
+	// carry out movements of all TribeMember objects
+	void moveBodies();
+ 
 	
 };
 

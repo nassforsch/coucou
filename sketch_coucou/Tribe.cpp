@@ -36,7 +36,7 @@ Tribe::Tribe()
 	// create servo driver object that will be shared by all bodies created by the Tribe
 	// called this way, it uses the default address 0x40
 	pwm = new Adafruit_PWMServoDriver();
-	bodyList = new LinkedList<TribeMember*>();
+	tribeMemberList = new LinkedList<TribeMember*>();
 
 	pwm->begin();
 	pwm->setPWMFreq(60);  // Analog servos run at ~60 Hz updates
@@ -47,42 +47,64 @@ Tribe::Tribe()
 Tribe::~Tribe()
 {
 	delete pwm;
-	delete bodyList;
+	delete tribeMemberList;
 }
 
-TribeMember* Tribe::createTribeMember()
+TribeMember* Tribe::createTribeMember(int fastSpeed, int slowSpeed)
 {
 	// create new TribeMember object with reference to servo driver
 	// and increase next servo counter by one
-	TribeMember *newTribeMember = new TribeMember();
-	bodyList->add(newTribeMember);
+	TribeMember *newTribeMember = new TribeMember(fastSpeed, slowSpeed);
+	tribeMemberList->add(newTribeMember);
 	return newTribeMember;
 }
+
+void Tribe::update(double loudness)
+{
+	// check if any TribeMember needs to move this turn
+	bool allTribeMembersIdle = true;
+	
+	for (int i=0; i<tribeMemberList->size(); i++) {
+		// pass sensor input to TribeMember
+		tribeMemberList->get(i)->determineReaction(loudness);
+		// turns false as soon as one TribeMember is not idle
+		allTribeMembersIdle = allTribeMembersIdle && tribeMemberList->get(i)->isIdle();
+	}
+	
+	// trigger movement if at least one member needs to move
+	if (!allTribeMembersIdle) {
+		digitalWrite(OE_PIN, LOW);
+		
+		moveBodies();
+	} else {
+		digitalWrite(OE_PIN, HIGH);
+	}
+		
+}
+
 
 void Tribe::moveBodies()
 {
     if((millis() - lastUpdate) > updateInterval)  // time to update
     {
 		lastUpdate = millis();
-		
-		//digitalWrite(OE_PIN, LOW);
-		
-		for (int i=0; i<bodyList->size(); i++) {
-			int targetPosition = (bodyList->get(i))->getTargetPosition();
-			int speed =  (bodyList->get(i))->getSpeed();
-			int position = (bodyList->get(i))->getPosition();
+				
+		for (int i=0; i<tribeMemberList->size(); i++) {
+			int targetPosition = (tribeMemberList->get(i))->getTargetPosition();
+			int speed =  (tribeMemberList->get(i))->getSpeed();
+			int position = (tribeMemberList->get(i))->getPosition();
 			int delta = targetPosition - position;
 			if (delta > 0)
 				position = position + constrain(delta,0,speed);
 			else if (delta < 0)
-				position = position + constrain(delta,-speed,0);
-			(bodyList->get(i))->setPosition(position);
+				position = position + constrain(delta,-speed,0);			
 			int pulselength = map(position, 0, 180, SERVOMIN, SERVOMAX);
 			Serial.println(pulselength);
 			pwm->setPWM(i, 0, pulselength);
+			tribeMemberList->get(i)->setPosition(position);
 		}
 		
-		//digitalWrite(OE_PIN, HIGH);
+		
 	}
 	
 }

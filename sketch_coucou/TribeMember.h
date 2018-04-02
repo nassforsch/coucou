@@ -21,7 +21,7 @@
 
 class TribeMember {
   public:
-    TribeMember();
+    TribeMember(int fastSpeed, int slowSpeed);
     ~TribeMember();
 	
 	void determineReaction(double loudness);	
@@ -32,11 +32,17 @@ class TribeMember {
 	bool isIdle();
     
   private:
+	// configuration of TribeMember
+	unsigned int fastSpeed = 0;
+	unsigned int slowSpeed = 0;
+	
+	// state related information
 	bool idle = true;
 	int targetPosition = 0;
 	int position = 0; // current servo target position
 	int speed = 1000; // degrees per second
 	unsigned long startWaitTime = 0; // starting time of waiting period (in millis)
+	unsigned long startMoveTime = 0; // starting time of moving perion (in millis)
 	enum stateOptions { IN, HALF, OUT, MOVEIN, MOVEHALF, MOVEOUT } myState = IN;
 	
 };

@@ -32,7 +32,7 @@ void setup() {
   // put your setup code here, to run once:
   myEar = new Ear(sensorPin);
   myTribe = new Tribe();
-  myTribeMember = myTribe->createTribeMember();
+  myTribeMember = myTribe->createTribeMember(20, 2);
   Serial.begin (9600);
   delay(10);
 }
@@ -40,8 +40,7 @@ void setup() {
 void loop() {
    // put your main code here, to run repeatedly:
    loudness = myEar->getLoudness();
-   myTribeMember->determineReaction(loudness);
-   myTribe->moveBodies();
+   myTribe->update(loudness);
    Serial.println(loudness);
    //delay(100);
 }

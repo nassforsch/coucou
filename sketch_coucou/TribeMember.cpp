@@ -22,15 +22,16 @@
 #include <Adafruit_PWMServoDriver.h>
 
 
-TribeMember::TribeMember()
+TribeMember::TribeMember(int _fastSpeed, int _slowSpeed)
+:fastSpeed(_fastSpeed), slowSpeed(_slowSpeed)
 {
-	// initally move to "IN" position
+	// initally move fast to "IN" position
 	myState = MOVEIN;
 	position = 0;
 	targetPosition = 5;
-	speed = 1000;
+	speed = fastSpeed;
 	idle = false;
-	startWaitTime = millis();
+	startMoveTime = millis();
 }
 
 TribeMember::~TribeMember()
@@ -77,7 +78,7 @@ void TribeMember::determineReaction(double loudness)
 			// if loudness has been below threshold
 			// for full wait time
 			myState = MOVEOUT;
-			speed = 2;
+			speed = slowSpeed;
 			targetPosition = 175;
 			startWaitTime = millis();
 			idle = false;
@@ -88,14 +89,15 @@ void TribeMember::determineReaction(double loudness)
 			// retract further to IN state if loudness
 			// is above higher threshold
 			myState = MOVEIN;
-			speed = 1000;
+			speed = fastSpeed;
 			targetPosition = 5;
 			idle = false;
+			startMoveTime = millis();
 		} else if (loudness < 1.5 && millis() - startWaitTime > 5000) {
 			// move further out if loudness was below threshold
 			// for full wait time
 			myState = MOVEOUT;
-			speed = 2;
+			speed = slowSpeed;
 			targetPosition = 175;
 			idle = false;
 		}
@@ -103,27 +105,31 @@ void TribeMember::determineReaction(double loudness)
 	if (myState == OUT && millis() - startWaitTime > 2000) {
 		if (loudness > 2.0) {
 			myState = MOVEIN;
-			speed = 1000;
+			speed = fastSpeed;
 			targetPosition = 5;
 			idle = false;
+			startMoveTime = millis();
 		} else if (loudness > 1.5) {
 			myState = MOVEHALF;
-			speed = 1000;
+			speed = fastSpeed;
 			targetPosition = 90;
 			idle = false;
+			startMoveTime = millis();
 		}
 	}
 	if (myState == MOVEOUT) {
 		if (loudness > 2.0) {
 			myState = MOVEIN;
-			speed = 1000;
+			speed = fastSpeed;
 			targetPosition = 5;
 			idle = false;
+			startMoveTime = millis();
 		} else if (loudness > 1.5 && position > 90) {
 			myState = MOVEHALF;
-			speed = 1000;
+			speed = fastSpeed;
 			targetPosition = 90;
 			idle = false;
+			startMoveTime = millis();
 		} else if (position == targetPosition) {
 			myState = OUT;
 			idle = true;
@@ -132,17 +138,17 @@ void TribeMember::determineReaction(double loudness)
 	if (myState == MOVEHALF) {
 		if (loudness > 2.0) {
 			myState = MOVEIN;
-			speed = 1000;
+			speed = fastSpeed;
 			targetPosition = 5;
 			idle = false;
-		} else if (position == targetPosition) {
+		} else if (position == targetPosition && millis() - startMoveTime > 100) {
 			myState = HALF;
 			startWaitTime = millis();
 			idle = true;
 		}
 	}
 	if (myState == MOVEIN) {
-		if (position == targetPosition) {
+		if (position == targetPosition && millis() - startMoveTime > 100) {
 			myState = IN;
 			startWaitTime = millis();
 			idle = true;
